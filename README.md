@@ -1,73 +1,185 @@
-# Welcome to your Lovable project
+# Seakuy - Private NFT Marketplace
 
-## Project info
+A decentralized NFT marketplace built with Zama FHEVM for encrypted, private transactions on Sepolia network.
 
-**URL**: https://lovable.dev/projects/86367a28-bcf1-4f4e-903a-8b38dcc75018
+## Features
 
-## How can I edit this code?
+- 🔒 **Encrypted Transactions**: All NFT prices and bids are encrypted using Zama FHEVM
+- 🎨 **Mint & Create**: Create and mint your own NFTs with encrypted pricing
+- 🛒 **Private Trading**: Buy and sell NFTs without revealing transaction details
+- 💰 **Secret Bidding**: Place bids that remain private until accepted
+- 🌐 **Sepolia Network**: Built on Ethereum Sepolia testnet with FHEVM integration
+- ⚡ **Modern UI**: Beautiful, responsive interface with GSAP animations
 
-There are several ways of editing your application.
+## Technology Stack
 
-**Use Lovable**
+### Frontend
+- React 18 + TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- GSAP for animations
+- ethers.js for blockchain interaction
+- fhevmjs for encryption
+- shadcn/ui components
+- Zustand for state management
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/86367a28-bcf1-4f4e-903a-8b38dcc75018) and start prompting.
+### Smart Contracts
+- Solidity ^0.8.24
+- Zama FHEVM for confidential computing
+- Deployed on Sepolia testnet
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js v18 or higher
+- MetaMask browser extension
+- Sepolia ETH for testing
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd seakuy
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Smart Contract Deployment
 
-**Use GitHub Codespaces**
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Configuration
 
-## What technologies are used for this project?
+After deploying the smart contract, update the contract address in `src/config/contracts.ts`:
 
-This project is built with:
+```typescript
+export const MARKETPLACE_ADDRESS = "YOUR_DEPLOYED_CONTRACT_ADDRESS";
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## How It Works
 
-## How can I deploy this project?
+### Encrypted Pricing
+All NFT prices are encrypted using Zama FHEVM's homomorphic encryption. This ensures:
+- Sellers can set private prices
+- Buyers can verify they meet the price without revealing the exact amount
+- Platform maintains price confidentiality
 
-Simply open [Lovable](https://lovable.dev/projects/86367a28-bcf1-4f4e-903a-8b38dcc75018) and click on Share -> Publish.
+### Private Bidding
+When placing bids:
+1. Bid amounts are encrypted client-side using FHEVM
+2. Encrypted bids are stored on-chain
+3. Only the NFT owner can view and accept bids
+4. Rejected bids remain permanently private
 
-## Can I connect a custom domain to my Lovable project?
+### Secure Transactions
+- Smart contract validates encrypted payments match encrypted prices
+- Platform fee (2.5%) is automatically calculated
+- Ownership transfers occur atomically on-chain
 
-Yes, you can!
+## Project Structure
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── components/        # React components
+│   ├── ui/           # shadcn/ui components
+│   ├── Navbar.tsx    # Navigation bar
+│   └── NFTCard.tsx   # NFT display card
+├── pages/            # Route pages
+│   ├── Index.tsx     # Landing page
+│   ├── Marketplace.tsx
+│   ├── NFTDetail.tsx
+│   ├── CreateNFT.tsx
+│   └── Profile.tsx
+├── lib/              # Utilities
+│   ├── fhevm.ts      # FHEVM initialization
+│   ├── wallet.ts     # Wallet connection
+│   └── marketplace.ts # Contract interactions
+├── hooks/            # React hooks
+│   └── useWallet.ts  # Wallet state management
+├── contracts/        # Solidity contracts
+│   └── SeakuyNFTMarketplace.sol
+└── config/           # Configuration
+    └── contracts.ts  # Contract addresses & ABIs
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Key Features Implementation
+
+### Wallet Connection
+```typescript
+import { useWallet } from "@/hooks/useWallet";
+
+const { address, connect } = useWallet();
+```
+
+### Minting NFT
+```typescript
+import { mintNFT } from "@/lib/marketplace";
+
+await mintNFT(tokenURI, "2.5"); // 2.5 ETH encrypted price
+```
+
+### Buying NFT
+```typescript
+import { buyNFT } from "@/lib/marketplace";
+
+await buyNFT(tokenId, "2.5"); // Encrypted payment
+```
+
+### Placing Bid
+```typescript
+import { placeBid } from "@/lib/marketplace";
+
+await placeBid(tokenId, "1.8"); // Encrypted bid amount
+```
+
+## Security Considerations
+
+- All sensitive data encrypted using FHEVM
+- Smart contract includes access controls
+- No plaintext price exposure on-chain
+- Encrypted bid comparisons on-chain
+- Test thoroughly before mainnet deployment
+
+## Development Guidelines
+
+- Follow TypeScript best practices
+- Maintain clean code principles
+- Use semantic commit messages
+- Test all smart contract functions
+- Validate all user inputs
+
+## Hackathon Submission
+
+This project demonstrates:
+- Advanced use of Zama FHEVM
+- Full-stack dApp development
+- Modern web3 UX patterns
+- Privacy-preserving transactions
+- Professional code quality
+
+## Resources
+
+- [Zama FHEVM Documentation](https://docs.zama.ai/)
+- [Sepolia Testnet Faucet](https://sepoliafaucet.com/)
+- [Ethers.js Documentation](https://docs.ethers.org/)
+- [GSAP Documentation](https://greensock.com/gsap/)
+
+## License
+
+MIT
+
+## Support
+
+For questions or issues:
+- Review documentation at https://docs.zama.ai/
+- Check existing issues
+- Open new issue with detailed description
