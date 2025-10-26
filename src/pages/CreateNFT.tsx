@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 import { useState, useRef } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useWallet } from "@/hooks/useWallet";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ export default function CreateNFT() {
   
   const demoMode = useDemoMode();
   const marketplace = useMarketplace();
+  const wallet = useWallet();
   
   const isLoading = DEMO_MODE ? demoMode.isLoading : marketplace.isLoading;
 
@@ -42,6 +44,12 @@ export default function CreateNFT() {
   const handleMint = async () => {
     if (!formData.name || !formData.description || !formData.price || !imagePreview) {
       toast.error("Please fill all fields and upload an image");
+      return;
+    }
+
+    // Check wallet connection in production mode
+    if (!DEMO_MODE && !wallet.address) {
+      toast.error("Please connect your wallet first");
       return;
     }
 
