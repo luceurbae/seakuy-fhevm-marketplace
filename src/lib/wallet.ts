@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -9,11 +9,7 @@ declare global {
 
 export const connectWallet = async (): Promise<string | null> => {
   if (!window.ethereum) {
-    toast({
-      title: "MetaMask Not Found",
-      description: "Please install MetaMask to use this dApp",
-      variant: "destructive",
-    });
+    toast.error("Please install MetaMask to use this dApp");
     return null;
   }
 
@@ -28,18 +24,12 @@ export const connectWallet = async (): Promise<string | null> => {
       await switchToSepolia();
     }
     
-    toast({
-      title: "Wallet Connected",
-      description: `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`,
-    });
+    toast.success(`Wallet Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
     
     return address;
   } catch (error: any) {
-    toast({
-      title: "Connection Failed",
-      description: error.message,
-      variant: "destructive",
-    });
+    console.error("Wallet connection error:", error);
+    toast.error(error.message || "Failed to connect wallet");
     return null;
   }
 };
