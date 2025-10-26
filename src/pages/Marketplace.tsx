@@ -2,40 +2,14 @@ import { Navbar } from "@/components/Navbar";
 import { NFTCard } from "@/components/NFTCard";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-
-const mockNFTs = [
-  {
-    tokenId: 1,
-    title: "Cosmic Voyager #001",
-    image: "https://images.unsplash.com/photo-1634193295627-1cdddf751ebf?w=800&q=80",
-    price: "2.5",
-    owner: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  },
-  {
-    tokenId: 2,
-    title: "Digital Dreams #042",
-    image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80",
-    price: "1.8",
-    owner: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-  },
-  {
-    tokenId: 3,
-    title: "Neon Genesis #128",
-    image: "https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=800&q=80",
-    price: "3.2",
-    owner: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
-  },
-  {
-    tokenId: 4,
-    title: "Pixel Paradise #256",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80",
-    price: "4.5",
-    owner: "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359",
-  },
-];
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { DEMO_MODE } from "@/lib/demo-mode";
 
 export default function Marketplace() {
   const gridRef = useRef<HTMLDivElement>(null);
+  const demoMode = useDemoMode();
+  
+  const nfts = DEMO_MODE ? demoMode.nfts.filter(nft => nft.isListed) : [];
 
   useEffect(() => {
     if (!gridRef.current) return;
@@ -66,9 +40,15 @@ export default function Marketplace() {
         </div>
 
         <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockNFTs.map((nft) => (
-            <NFTCard key={nft.tokenId} {...nft} />
-          ))}
+          {nfts.length === 0 ? (
+            <div className="col-span-full text-center py-20">
+              <p className="text-muted-foreground text-lg">No NFTs listed yet. Create your first NFT!</p>
+            </div>
+          ) : (
+            nfts.map((nft) => (
+              <NFTCard key={nft.tokenId} {...nft} />
+            ))
+          )}
         </div>
       </main>
     </div>

@@ -4,7 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { useMarketplace } from "@/hooks/useMarketplace";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function CreateNFT() {
   const [formData, setFormData] = useState({
@@ -12,6 +17,47 @@ export default function CreateNFT() {
     description: "",
     price: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  
+  const demoMode = useDemoMode();
+  const marketplace = useMarketplace();
+  
+  const isLoading = DEMO_MODE ? demoMode.isLoading : marketplace.isLoading;
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleMint = async () => {
+    if (!formData.name || !formData.description || !formData.price || !imagePreview) {
+      toast.error("Please fill all fields and upload an image");
+      return;
+    }
+
+    try {
+      if (DEMO_MODE) {
+        await demoMode.mintNFT(formData.name, formData.description, imagePreview, formData.price);
+      } else {
+        await marketplace.mintNFT(imagePreview, formData.price);
+      }
+      
+      toast.success("NFT created successfully!");
+      navigate("/profile");
+    } catch (error) {
+      console.error("Minting error:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,14 +73,28 @@ export default function CreateNFT() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="p-6 gradient-card border-border">
-              <div className="aspect-square border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                <div className="text-center">
-                  <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">Click to upload or drag and drop</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    PNG, JPG, GIF up to 10MB
-                  </p>
-                </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="aspect-square border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden"
+              >
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center">
+                    <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">Click to upload or drag and drop</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      PNG, JPG, GIF up to 10MB
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -88,8 +148,12 @@ export default function CreateNFT() {
                 </ul>
               </Card>
 
-              <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
-                Create & Mint NFT
+              <Button 
+                onClick={handleMint} 
+                disabled={isLoading}
+                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+              >
+                {isLoading ? "Creating..." : "Create & Mint NFT"}
               </Button>
             </div>
           </div>

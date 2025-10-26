@@ -1,28 +1,38 @@
 import { Navbar } from "@/components/Navbar";
 import { NFTCard } from "@/components/NFTCard";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWallet } from "@/hooks/useWallet";
-
-const mockUserNFTs = [
-  {
-    tokenId: 1,
-    title: "Cosmic Voyager #001",
-    image: "https://images.unsplash.com/photo-1634193295627-1cdddf751ebf?w=800&q=80",
-    price: "2.5",
-    owner: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  },
-  {
-    tokenId: 3,
-    title: "Neon Genesis #128",
-    image: "https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=800&q=80",
-    price: "3.2",
-    owner: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
-  },
-];
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Profile() {
   const { address } = useWallet();
+  const demoMode = useDemoMode();
+  const [listPrice, setListPrice] = useState<Record<number, string>>({});
+  
+  const userNFTs = DEMO_MODE && address ? demoMode.getUserNFTs(address) : [];
+
+  const handleListNFT = async (tokenId: number) => {
+    const price = listPrice[tokenId];
+    if (!price) {
+      toast.error("Please enter a price");
+      return;
+    }
+    
+    try {
+      if (DEMO_MODE) {
+        await demoMode.listNFT(tokenId, price);
+      }
+      setListPrice({ ...listPrice, [tokenId]: "" });
+    } catch (error) {
+      console.error("List error:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,9 +61,38 @@ export default function Profile() {
 
           <TabsContent value="owned">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {mockUserNFTs.map((nft) => (
-                <NFTCard key={nft.tokenId} {...nft} />
-              ))}
+              {userNFTs.length === 0 ? (
+                <div className="col-span-full text-center py-20">
+                  <p className="text-muted-foreground text-lg">No NFTs yet. Create your first NFT!</p>
+                </div>
+              ) : (
+                userNFTs.map((nft) => (
+                  <div key={nft.tokenId} className="space-y-3">
+                    <NFTCard {...nft} />
+                    {!nft.isListed && (
+                      <Card className="p-4 gradient-card border-border">
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            placeholder="Price (ETH)"
+                            value={listPrice[nft.tokenId] || ""}
+                            onChange={(e) => setListPrice({ ...listPrice, [nft.tokenId]: e.target.value })}
+                            className="bg-background/50"
+                          />
+                          <Button 
+                            onClick={() => handleListNFT(nft.tokenId)}
+                            disabled={demoMode.isLoading}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {demoMode.isLoading ? "Listing..." : "List for Sale"}
+                          </Button>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </TabsContent>
 
