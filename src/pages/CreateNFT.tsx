@@ -49,7 +49,7 @@ export default function CreateNFT() {
 
     // Check wallet connection in production mode
     if (!DEMO_MODE && !wallet.address) {
-      toast.error("Please connect your wallet first");
+      toast.error("Please connect your wallet first using the Connect Wallet button in the navbar");
       return;
     }
 
@@ -57,13 +57,19 @@ export default function CreateNFT() {
       if (DEMO_MODE) {
         await demoMode.mintNFT(formData.name, formData.description, imagePreview, formData.price);
       } else {
+        // Ensure wallet is connected before minting
+        if (!wallet.address) {
+          toast.error("Wallet not connected. Please connect your wallet first.");
+          return;
+        }
         await marketplace.mintNFT(imagePreview, formData.price);
       }
       
       toast.success("NFT created successfully!");
       navigate("/profile");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Minting error:", error);
+      toast.error(error.message || "Failed to mint NFT");
     }
   };
 

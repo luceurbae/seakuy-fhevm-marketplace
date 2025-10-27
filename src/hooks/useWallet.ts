@@ -26,9 +26,16 @@ export const useWallet = () => {
 
   const connect = async () => {
     try {
-      // WalletConnect connector is typically the first one
-      const walletConnectConnector = connectors.find(c => c.id === 'walletConnect') || connectors[0];
-      await connectAsync({ connector: walletConnectConnector });
+      // Try to find injected connector (MetaMask, etc.) first, then WalletConnect
+      const injectedConnector = connectors.find(c => c.id === 'injected');
+      const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+      const connector = injectedConnector || walletConnectConnector || connectors[0];
+      
+      if (!connector) {
+        throw new Error("No wallet connector available");
+      }
+      
+      await connectAsync({ connector });
       
       // Initialize FHEVM for encrypted bids, prices, etc.
       await initializeFhevm();

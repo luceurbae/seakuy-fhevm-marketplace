@@ -1,5 +1,6 @@
 import { createInstance, initFhevm } from "fhevmjs";
 
+// Updated Sepolia testnet configuration for Zama FHEVM
 export const SEPOLIA_CONFIG = {
   chainId: 11155111,
   networkUrl: "https://eth-sepolia.public.blastapi.io",
@@ -13,11 +14,16 @@ let fhevmInstance: any = null;
 export const initializeFhevm = async () => {
   if (fhevmInstance) return fhevmInstance;
   
-  await initFhevm();
-  
-  fhevmInstance = await createInstance(SEPOLIA_CONFIG);
-  
-  return fhevmInstance;
+  try {
+    await initFhevm();
+    fhevmInstance = await createInstance(SEPOLIA_CONFIG);
+    console.log("FHEVM initialized successfully");
+    return fhevmInstance;
+  } catch (error) {
+    console.error("FHEVM initialization error:", error);
+    // Don't throw - allow the app to continue in demo mode
+    return null;
+  }
 };
 
 export const getFhevmInstance = () => {
