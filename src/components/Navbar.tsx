@@ -1,12 +1,9 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useWallet } from "@/hooks/useWallet";
-import { useWeb3Modal } from '@web3modal/wagmi/react';
 
 export const Navbar = () => {
   const { address } = useWallet();
-  const { open } = useWeb3Modal();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
@@ -33,13 +30,7 @@ export const Navbar = () => {
             )}
           </div>
 
-          <Button
-            onClick={() => open()}
-            className="bg-gradient-primary hover:opacity-90 transition-opacity"
-          >
-            <Wallet className="mr-2 h-4 w-4" />
-            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
-          </Button>
+          <ConnectButton />
         </div>
       </div>
     </nav>
