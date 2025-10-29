@@ -3,6 +3,7 @@ import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { initializeFhevm } from "@/lib/fhevm";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { getProvider } from "@/lib/wallet";
 
 interface WalletState {
   address: string | null;
@@ -13,16 +14,39 @@ interface WalletState {
 
 // This hook now wraps wagmi hooks for WalletConnect support
 export const useWallet = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { connectAsync, connectors } = useConnect();
   const { disconnectAsync } = useDisconnect();
   
   // Initialize FHEVM when wallet connects for privacy features
   useEffect(() => {
-    if (isConnected && address) {
-      initializeFhevm().catch(console.error);
-    }
-  }, [isConnected, address]);
+    const initFhevm = async () => {
+      if (isConnected && address) {
+        try {
+          // Get chain ID from connected chain or detect from provider
+          let chainId = chain?.id || 11155111; // Default to Sepolia
+          
+          // If using localhost/hardhat, detect it
+          const provider = getProvider();
+          if (provider) {
+            try {
+              const network = await provider.getNetwork();
+              chainId = Number(network.chainId);
+            } catch (e) {
+              console.warn("Could not detect network, using default", e);
+            }
+          }
+          
+          console.log(`Initializing FHEVM for chain ${chainId}`);
+          await initializeFhevm(chainId);
+        } catch (error) {
+          console.error("FHEVM initialization error:", error);
+        }
+      }
+    };
+    
+    initFhevm();
+  }, [isConnected, address, chain]);
 
   const connect = async () => {
     try {
@@ -35,15 +59,21 @@ export const useWallet = () => {
         throw new Error("No wallet connector available");
       }
       
-      await connectAsync({ connector });
+      const result = await connectAsync({ connector });
       
       // Initialize FHEVM for encrypted bids, prices, etc.
-      await initializeFhevm();
+      const chainId = result.chainId || 11155111;
+      console.log(`Connected to chain ${chainId}, initializing FHEVM...`);
+      await initializeFhevm(chainId);
       
       toast.success("Wallet connected successfully");
     } catch (error: any) {
       console.error("Connection error:", error);
-      toast.error(error.message || "Failed to connect wallet");
+      if (error.message?.includes("User rejected")) {
+        toast.error("Connection cancelled");
+      } else {
+        toast.error(error.message || "Failed to connect wallet");
+      }
     }
   };
 

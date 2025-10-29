@@ -54,6 +54,10 @@ export default function CreateNFT() {
     }
 
     try {
+      console.log("Starting mint process...");
+      console.log("Demo mode:", DEMO_MODE);
+      console.log("Wallet address:", wallet.address);
+      
       if (DEMO_MODE) {
         await demoMode.mintNFT(formData.name, formData.description, imagePreview, formData.price);
       } else {
@@ -62,14 +66,24 @@ export default function CreateNFT() {
           toast.error("Wallet not connected. Please connect your wallet first.");
           return;
         }
+        
+        console.log("Calling marketplace.mintNFT...");
         await marketplace.mintNFT(imagePreview, formData.price);
       }
       
       toast.success("NFT created successfully!");
       navigate("/profile");
     } catch (error: any) {
-      console.error("Minting error:", error);
-      toast.error(error.message || "Failed to mint NFT");
+      console.error("Minting error details:", error);
+      
+      // Better error messages
+      if (error.code === 4001 || error.message?.includes("user rejected") || error.message?.includes("User rejected")) {
+        toast.error("Transaction cancelled by user");
+      } else if (error.message?.includes("wallet must has at least one account")) {
+        toast.error("Please make sure your wallet is unlocked and has accounts");
+      } else {
+        toast.error(error.message || "Failed to mint NFT");
+      }
     }
   };
 

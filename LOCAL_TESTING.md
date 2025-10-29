@@ -1,8 +1,39 @@
 # Local Testing Guide for Seakuy NFT Marketplace
 
-This guide will help you test the Seakuy NFT Marketplace locally using Hardhat with Zama FHEVM, without needing the Sepolia testnet.
+This guide will help you test the Seakuy NFT Marketplace locally.
 
-## Prerequisites
+## ⚡ Quick Start (RECOMMENDED)
+
+**For the easiest local testing experience, use Demo Mode:**
+
+### Demo Mode Setup (No Blockchain Required)
+
+1. **Create `.env` file:**
+   ```bash
+   VITE_DEMO_MODE=true
+   ```
+
+2. **Start the app:**
+   ```bash
+   npm run dev
+   ```
+
+3. **Test all features** without wallet connection:
+   - ✅ Mint NFTs with encrypted prices
+   - ✅ List NFTs for sale
+   - ✅ Place encrypted bids
+   - ✅ Buy NFTs
+   - ✅ View your profile and collection
+
+**Demo Mode simulates all blockchain functionality including FHEVM encryption.**
+
+---
+
+## 🔧 Advanced: Hardhat Local Network
+
+**⚠️ Warning**: Local blockchain testing requires deploying FHEVM contracts, which is complex. **Demo Mode is recommended** unless you specifically need to test contract deployment.
+
+### Prerequisites
 
 - Node.js v18+ installed
 - npm or yarn
@@ -165,7 +196,14 @@ Make sure:
 
 ### FHEVM Initialization Error
 
-For local testing, FHEVM uses a mocked implementation. If you see initialization errors, they can be safely ignored as the contract will work with mock encrypted data.
+**For local Hardhat testing**, FHEVM cannot fully initialize because it requires KMS and ACL contracts deployed on the network. This is expected behavior.
+
+**Solutions:**
+1. **Use Demo Mode** (recommended): Set `VITE_DEMO_MODE=true` in `.env`
+2. **Use Sepolia Testnet**: Zama has FHEVM contracts deployed on Sepolia
+3. **Deploy FHEVM Contracts Locally**: Follow [Zama's deployment guide](https://docs.zama.ai/fhevm) (advanced)
+
+The error "Invalid public key (deserialization failed)" means FHEVM can't connect to KMS contracts. This is normal for localhost without FHEVM deployment.
 
 ### Connection Refused
 

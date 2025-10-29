@@ -26,15 +26,21 @@ const getNetworkConfig = (chainId: number) => {
 export const initializeFhevm = async (chainId: number = 11155111) => {
   if (fhevmInstance) return fhevmInstance;
   
+  // Skip FHEVM for localhost since it requires deployed contracts
+  if (chainId === 31337) {
+    console.log("Skipping FHEVM initialization for localhost (use demo mode for local testing)");
+    return null;
+  }
+  
   try {
     await initFhevm();
     const config = getNetworkConfig(chainId);
     fhevmInstance = await createInstance(config);
-    console.log(`FHEVM initialized successfully for ${chainId === 31337 ? 'localhost' : 'Sepolia'}`);
+    console.log(`FHEVM initialized successfully for Sepolia`);
     return fhevmInstance;
   } catch (error) {
     console.error("FHEVM initialization error:", error);
-    // Don't throw - allow the app to continue in demo mode
+    console.warn("Continuing without FHEVM encryption");
     return null;
   }
 };
