@@ -73,5 +73,5 @@ export const generateDemoNFT = (tokenId: number, owner: string): NFT => ({
 export const simulateTransaction = async (action: string): Promise<boolean> => {
   console.log(`🎭 DEMO MODE: Simulating ${action}...`);
   await new Promise((resolve) => setTimeout(resolve, 1500));
-  return Math.random() > 0.1; // 90% success rate
+  return true; // Always succeed in demo mode for testing
 };
